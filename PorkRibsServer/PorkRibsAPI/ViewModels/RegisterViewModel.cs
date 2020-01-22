@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PorkRibs.ViewModels
+namespace PorkRibsAPI.ViewModels
 {
     public class RegisterViewModel
     {

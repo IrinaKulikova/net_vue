@@ -5,20 +5,19 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
-using PorkRibs.Models;
-using PorkRibs.DataBase;
-using PorkRibsAPI.DataBase.Init;
-using PorkRibsAPI.DataBase.Intit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using PorkRibsAPI.Factories;
+using PorkRibsData.DataBase;
+using PorkRibsData.Models;
+using PorkRibsData.ConfigurationServices;
+using PorkRibsData.DataBase.Intit.Interfaces;
+using PorkRibsRepositories;
 using PorkRibsAPI.Factories.Interface;
-using PorkRibsAPI.ConfigurationServices;
-using PorkRibsAPI.Models;
-using PorkRibsAPI.Repositories.GenericRepository.Interfaces;
-using PorkRibsAPI.Repositories;
+using PorkRibsData.DataBase.Init;
+using PorkRibsAPI.Factories;
+using PorkRibsAPI.TokenFactories.Interface;
+using PorkRibsAPI.TokenFactories;
 
-namespace PorkRibs
+namespace PorkRibsAPI
 {
     public class Startup
     {
@@ -33,7 +32,7 @@ namespace PorkRibs
             services.AddDbContext<PorkRibsDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()
+            services.AddIdentity<ApplicationUser, IdentityRole>()                
                 .AddEntityFrameworkStores<PorkRibsDbContext>();
 
             services.AddJWTService(Configuration);
@@ -49,11 +48,11 @@ namespace PorkRibs
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigin"));
             });
 
-            services.AddHttpsRedirection(options =>
-            {
-                options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-                options.HttpsPort = 4445;
-            });
+            //services.AddHttpsRedirection(options =>
+            //{
+            //    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
+            //    options.HttpsPort = 4445;
+            //});
 
             services.AddTransient<IInitializer, Initializer>();
             services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();

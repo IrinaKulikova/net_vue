@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PorkRibs.Models;
 using PorkRibsAPI.Factories.Interface;
 using PorkRibsAPI.ViewModels;
+using PorkRibsData.Models;
 using System.Threading.Tasks;
 
-namespace PorkRibs.API
+namespace PorkRibsAPI.API
 {
     [Route("api/v1/[controller]/")]
     [ApiController]

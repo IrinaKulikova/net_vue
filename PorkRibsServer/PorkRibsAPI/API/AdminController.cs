@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PorkRibs.Models;
-using PorkRibsAPI.DataBase.Intit;
-using PorkRibsAPI.Enums;
 using PorkRibsAPI.Factories.Interface;
 using PorkRibsAPI.ViewModels;
+using PorkRibsData.DataBase.Intit.Interfaces;
+using PorkRibsData.Enums;
+using PorkRibsData.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
