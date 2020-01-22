@@ -16,6 +16,7 @@ using PorkRibsData.DataBase.Init;
 using PorkRibsAPI.Factories;
 using PorkRibsAPI.TokenFactories.Interface;
 using PorkRibsAPI.TokenFactories;
+using Microsoft.OpenApi.Models;
 
 namespace PorkRibsAPI
 {
@@ -32,7 +33,7 @@ namespace PorkRibsAPI
             services.AddDbContext<PorkRibsDbContext>(options =>
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
-            services.AddIdentity<ApplicationUser, IdentityRole>()                
+            services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<PorkRibsDbContext>();
 
             services.AddJWTService(Configuration);
@@ -48,11 +49,10 @@ namespace PorkRibsAPI
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigin"));
             });
 
-            //services.AddHttpsRedirection(options =>
-            //{
-            //    options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-            //    options.HttpsPort = 4445;
-            //});
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PorkRibsAPI", Version = "v1" });
+            });
 
             services.AddTransient<IInitializer, Initializer>();
             services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();
@@ -64,6 +64,14 @@ namespace PorkRibsAPI
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PorkRibsAPI V1");
+                c.RoutePrefix = string.Empty;
+            });
+
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseMvc();
