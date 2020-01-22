@@ -2,7 +2,8 @@
 using Microsoft.IdentityModel.Tokens;
 using PorkRibs.Models;
 using PorkRibsAPI.Factories.Interface;
-using PorkRibsAPI.Repositories;
+using PorkRibsAPI.Models;
+using PorkRibsAPI.Repositories.GenericRepository.Interfaces;
 using PorkRibsAPI.Settings;
 using PorkRibsAPI.ViewModels;
 using System;
@@ -18,11 +19,11 @@ namespace PorkRibsAPI.Factories
     {
         private readonly JWTSettings _JWTSettings;
         private readonly IRefreshTokenFactory _refreshToken;
-        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IGenericRepository<RefreshToken> _refreshTokenRepository;
 
         public JWTTokenFactory(IOptions<JWTSettings> JWTSettings,
                                IRefreshTokenFactory refreshToken,
-                               IRefreshTokenRepository refreshTokenRepository)
+                               IGenericRepository<RefreshToken> refreshTokenRepository)
         {
             _JWTSettings = JWTSettings.Value;
             _refreshToken = refreshToken;
@@ -47,11 +48,11 @@ namespace PorkRibsAPI.Factories
 
             var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
             var refreshToken = _refreshToken.Create(token, user.UserName);
-            _refreshTokenRepository.AddRefreshToken(refreshToken);
+            _refreshTokenRepository.Create(refreshToken);
 
             var tokenDTO = new TokenDTO()
             {
-                Token = token,
+                AccessToken = token,
                 RefreshToken = refreshToken.Token,
                 Roles = roles,
                 Email = user.Email,

@@ -17,7 +17,7 @@ function login(username, password) {
     return fetch(`${config.apiUrl}/authentication`, requestOptions)
         .then(handleResponse)
         .then(user => {
-            if (user.token) {
+            if (user.accessToken && user.refreshToken) {
                 localStorage.setItem('user', JSON.stringify(user));
             }
             return user;

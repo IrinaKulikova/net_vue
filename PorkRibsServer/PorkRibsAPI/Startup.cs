@@ -14,6 +14,9 @@ using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using PorkRibsAPI.Factories;
 using PorkRibsAPI.Factories.Interface;
 using PorkRibsAPI.ConfigurationServices;
+using PorkRibsAPI.Models;
+using PorkRibsAPI.Repositories.GenericRepository.Interfaces;
+using PorkRibsAPI.Repositories;
 
 namespace PorkRibs
 {
@@ -28,16 +31,12 @@ namespace PorkRibs
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<PorkRibsDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")),ServiceLifetime.Transient);
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<PorkRibsDbContext>();
 
             services.AddJWTService(Configuration);
-
-            services.AddTransient<IInitializer, Initializer>();
-            services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();
-            services.AddTransient<IRefreshTokenFactory,RefreshTokenFactory>();
 
             services.AddCors(options =>
             {
@@ -55,6 +54,11 @@ namespace PorkRibs
                 options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
                 options.HttpsPort = 4445;
             });
+
+            services.AddTransient<IInitializer, Initializer>();
+            services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();
+            services.AddTransient<IRefreshTokenFactory, RefreshTokenFactory>();
+            services.AddTransient<IGenericRepository<RefreshToken>, RefreshTokenRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

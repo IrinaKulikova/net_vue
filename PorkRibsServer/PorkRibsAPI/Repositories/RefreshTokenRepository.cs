@@ -1,20 +1,12 @@
-﻿using System.Threading.Tasks;
-using PorkRibs.DataBase;
+﻿using PorkRibs.DataBase;
 using PorkRibsAPI.Models;
+using PorkRibsAPI.Repositories.GenericRepository;
 
 namespace PorkRibsAPI.Repositories
 {
-    public class RefreshTokenRepository : IRefreshTokenRepository
+    public class RefreshTokenRepository : GenericRepository<RefreshToken>
     {
-        private PorkRibsDbContext _porkRibsDbContext;
-        public RefreshTokenRepository(PorkRibsDbContext porkRibsDbContext)
-        {
-            _porkRibsDbContext = porkRibsDbContext;
-        }
-        public async Task AddRefreshToken(RefreshToken token)
-        {
-            await _porkRibsDbContext.RefreshTokens.AddAsync(token);
-            await _porkRibsDbContext.SaveChangesAsync();
-        }
+        public RefreshTokenRepository(PorkRibsDbContext porkRibsDbContext):base(porkRibsDbContext)
+        {}
     }
 }

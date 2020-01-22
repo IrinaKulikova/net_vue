@@ -1,9 +1,6 @@
 ﻿using PorkRibsAPI.Factories.Interface;
 using PorkRibsAPI.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace PorkRibsAPI.Factories
 {
@@ -14,7 +11,8 @@ namespace PorkRibsAPI.Factories
             var refreshToken = new RefreshToken()
             {
                 UserName = userName,
-                Token = Guid.NewGuid().ToString()
+                Token = Guid.NewGuid().ToString(),
+                Revoked = false
             };
 
             return refreshToken;
