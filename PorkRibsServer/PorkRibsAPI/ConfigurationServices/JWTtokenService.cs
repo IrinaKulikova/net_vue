@@ -4,10 +4,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using PorkRibsData.DataBase;
 using PorkRibsData.Settings;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PorkRibsData.ConfigurationServices
+namespace PorkRibsAPI.ConfigurationServices
 {
     public static class JWTtokenService
     {
@@ -51,7 +52,9 @@ namespace PorkRibsData.ConfigurationServices
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
         }

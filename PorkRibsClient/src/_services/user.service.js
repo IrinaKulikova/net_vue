@@ -3,6 +3,7 @@ import { authHeader } from '../_helpers';
 
 export const userService = {
     login,
+    refreshToken,
     logout,
     getAll
 };
@@ -15,6 +16,23 @@ function login(username, password) {
     };
 
     return fetch(`${config.apiUrl}/authentication`, requestOptions)
+        .then(handleResponse)
+        .then(user => {
+            if (user.accessToken && user.refreshToken) {
+                localStorage.setItem('user', JSON.stringify(user));
+            }
+            return user;
+        });
+}
+
+function refreshToken(){
+    const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, refreshToken })
+    };
+
+    return fetch(`${config.apiUrl}/authentication/refresh`, requestOptions)
         .then(handleResponse)
         .then(user => {
             if (user.accessToken && user.refreshToken) {

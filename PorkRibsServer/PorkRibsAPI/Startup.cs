@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using PorkRibsData.DataBase;
 using PorkRibsData.Models;
-using PorkRibsData.ConfigurationServices;
 using PorkRibsData.DataBase.Intit.Interfaces;
 using PorkRibsRepositories;
 using PorkRibsAPI.Factories.Interface;
@@ -17,6 +16,8 @@ using PorkRibsAPI.Factories;
 using PorkRibsAPI.TokenFactories.Interface;
 using PorkRibsAPI.TokenFactories;
 using Microsoft.OpenApi.Models;
+using PorkRibsRepositories.Interfaces;
+using PorkRibsAPI.ConfigurationServices;
 
 namespace PorkRibsAPI
 {
@@ -57,7 +58,7 @@ namespace PorkRibsAPI
             services.AddTransient<IInitializer, Initializer>();
             services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();
             services.AddTransient<IRefreshTokenFactory, RefreshTokenFactory>();
-            services.AddTransient<IGenericRepository<RefreshToken>, RefreshTokenRepository>();
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }

@@ -5,7 +5,7 @@ using PorkRibsAPI.TokenFactories.Interface;
 using PorkRibsAPI.ViewModels;
 using PorkRibsData.Models;
 using PorkRibsData.Settings;
-using PorkRibsRepositories;
+using PorkRibsRepositories.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,11 +19,11 @@ namespace PorkRibsAPI.Factories
     {
         private readonly JWTSettings _JWTSettings;
         private readonly IRefreshTokenFactory _refreshToken;
-        private readonly IGenericRepository<RefreshToken> _refreshTokenRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public JWTTokenFactory(IOptions<JWTSettings> JWTSettings,
                                IRefreshTokenFactory refreshToken,
-                               IGenericRepository<RefreshToken> refreshTokenRepository)
+                               IRefreshTokenRepository refreshTokenRepository)
         {
             _JWTSettings = JWTSettings.Value;
             _refreshToken = refreshToken;
@@ -41,13 +41,14 @@ namespace PorkRibsAPI.Factories
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(cliams),
-                Expires = DateTime.UtcNow.AddMinutes(_JWTSettings.MinutesLife),
+                Expires = DateTime.Now.AddSeconds(_JWTSettings.MinutesLife),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                                         SecurityAlgorithms.HmacSha256Signature)
+                                         SecurityAlgorithms.HmacSha256Signature),
             };
 
             var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
             var refreshToken = _refreshToken.Create(token, user.UserName);
+
             _refreshTokenRepository.Create(refreshToken);
 
             var tokenDTO = new TokenDTO()
