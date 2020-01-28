@@ -1,52 +1,74 @@
 import axios from 'axios';
 import { Promise } from "es6-promise";
 import { router } from '.';
+import { store } from '../_store';
+import config from 'config';
 
-export const authInterceptor = {
-  httpInterceptor
-};
+export const httpClient = axios.create();
 
-function httpInterceptor(){
-
-  axios.interceptors.response.use((response) => {
-    return response;
-  }, (error) => {
-    if (error.response.status !== 401) {
-      return new Promise((resolve, reject) => {
-        reject(error);
-      });
+httpClient.interceptors.request.use(
+  config => {
+    const user = store.state.authentication.user;
+    if (user && user.accessToken) {
+      config.headers['Authorization'] = 'Bearer ' + user.accessToken;
     }
+    config.headers['Content-Type'] = 'application/json';
+    return config;
+  },
+  error => {
+    Promise.reject(error)
+  });
 
-    // Logout user if token refresh didn't work or user is disabled
-    if (error.config.url == '/authentication/refresh' || error.response.message == 'Refresh token not found') {
-      
-      store.clear();
-      router.push("/login");
 
-      return new Promise((resolve, reject) => {
-        reject(error);
-      });
-    }
+httpClient.interceptors.response.use((response) => {
+  return response;
+}, (error) => {
 
-    // Try request again with new token
-    return TokenStorage.getNewToken()
-      .then((token) => {
+  if (error.response.status !== 401) {
+    return new Promise((resolve, reject) => {
+      reject(error);
+    });
+  }
 
-        // New request with new token
-        const config = error.config;
-        config.headers['Authorization'] = `Bearer ${token}`;
+  const originalRequest = error.config;
 
-        return new Promise((resolve, reject) => {
-          axios.request(config).then(response => {
-            resolve(response);
-          }).catch((error) => {
-            reject(error);
-          })
-        });
+  if (error.response.status === 401) {
 
+    const requestOptions = {
+      headers: {
+        'Content-Type': 'application/json',
+        'DataType': 'json',
+        'Access-Control-Allow-Origin': '*'
+      }
+    };
+
+    var refreshToken = store.state.authentication.user.refreshToken;
+    var userName = store.state.authentication.user.email;
+
+    const data = JSON.stringify({ refreshToken, userName });
+
+    httpClient.post(`${config.apiUrl}/authentication/refresh`, data, requestOptions)
+      .then((responseRefresh) => {
+        if (responseRefresh.status == 400) {
+          return new Promise((resolve, reject) => {
+            store.clear();
+            router.push("/login");
+          });
+        }
+
+        if (responseRefresh && responseRefresh.status === 201) {
+          const data = JSON.stringify(responseRefresh.data);
+
+          localStorage.setItem('user', data);
+          store.state.authentication.user = responseRefresh.data;
+          store.state.authentication.loggedIn = true;
+
+          httpClient.defaults.headers.common['Authorization'] = 'Bearer ' + store.state.authentication.user.accessToken;
+          return httpClient(originalRequest);
+        }
       })
       .catch((error) => {
-      	Promise.reject(error);
+        console.log(error);
       });
-  });
-}
+  }
+});

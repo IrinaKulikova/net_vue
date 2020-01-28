@@ -12,7 +12,7 @@ namespace PorkRibsRepositories
 
         public RefreshToken FindByGUID(string refreshToken, string userName)
         {
-            var token =  _dbSet.Where(t=>t.Token == refreshToken && !t.Revoked
+            var token =  _dbSet.Where(t=>t.Token == refreshToken
                                 && t.UserName == userName).FirstOrDefault();
 
             return token;

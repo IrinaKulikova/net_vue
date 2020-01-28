@@ -51,7 +51,7 @@ namespace PorkRibsAPI.API
 
             var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
 
-            var token = _tokenFactory.Create(user, roles);
+            var token = await _tokenFactory.Create(user, roles);
 
             return Created("JWT", token);
         }
@@ -66,13 +66,13 @@ namespace PorkRibsAPI.API
 
             if (refreshToken == null)
             {
-                return Unauthorized("Refresh token not found");
+                return BadRequest("Refresh token not found");
             }
 
             var user = await _userManager.FindByNameAsync(tokenDTO.UserName);
             var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
 
-            var token = _tokenFactory.Create(user, roles);
+            var token = await _tokenFactory.Create(user, roles);
 
             refreshToken.Revoked = true;
             await _refreshTokenRepository.Update(refreshToken);

@@ -1,73 +1,65 @@
 import config from 'config';
-import { authHeader } from '../_helpers';
+import { httpClient } from '../_helpers';
+import { store } from '../_store';
 
 export const userService = {
     login,
-    refreshToken,
     logout,
     getAll
 };
 
 function login(username, password) {
+
+    const data = JSON.stringify({ username, password });
+
     const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*"
+        }
     };
 
-    return fetch(`${config.apiUrl}/authentication`, requestOptions)
-        .then(handleResponse)
-        .then(user => {
-            if (user.accessToken && user.refreshToken) {
-                localStorage.setItem('user', JSON.stringify(user));
+    return httpClient.post(`${config.apiUrl}/authentication`, data, requestOptions)
+        .then(response => {
+            if (response.data.accessToken && response.data.refreshToken) {
+                localStorage.setItem('user', JSON.stringify(response.data));
             }
             return user;
+        })
+        .catch((err) => {
+            console.log("AXIOS ERROR: ", err);
         });
 }
 
-function refreshToken(){
-    const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, refreshToken })
-    };
-
-    return fetch(`${config.apiUrl}/authentication/refresh`, requestOptions)
-        .then(handleResponse)
-        .then(user => {
-            if (user.accessToken && user.refreshToken) {
-                localStorage.setItem('user', JSON.stringify(user));
-            }
-            return user;
-        });
-}
 
 function logout() {
     localStorage.removeItem('user');
 }
 
 function getAll() {
-    const requestOptions = {
-        method: 'GET',
-        headers: authHeader()
-    };
 
-    return fetch(`${config.apiUrl}/admin/users`, requestOptions).then(handleResponse);
-}
+    return httpClient.get(`${config.apiUrl}/admin/users`)
+        .then((response) => {
 
-function handleResponse(response) {
-    return response.text().then(text => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-            if (response.status === 401) {
-                logout();
-                location.reload(true);
+            // var usersJSON = response.data;
+            // var a = JSON.parse(usersJSON);
+            // console.log("aaa");
+            // console.log(response.data);
+            // const data = JSON.parse(response.data);
+
+            if (response.status !== 200) {
+                if (response.status === 401) {
+                    logout();
+                    location.reload(true);
+                }
+
+                const error = (response.data && response.data.message) || response.statusText;
+                return Promise.reject(error);
             }
 
-            const error = (data && data.message) || response.statusText;
-            return Promise.reject(error);
-        }
-
-        return data;
-    });
+            return data;
+        })
+        .catch((err) => {
+            console.log("AXIOS ERROR: ", err);
+        });
 }

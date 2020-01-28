@@ -12,6 +12,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace PorkRibsAPI.Factories
 {
@@ -29,7 +30,7 @@ namespace PorkRibsAPI.Factories
             _refreshToken = refreshToken;
             _refreshTokenRepository = refreshTokenRepository;
         }
-        public TokenDTO Create(ApplicationUser user, IEnumerable<string> roles)
+        public async Task<TokenDTO> Create(ApplicationUser user, IEnumerable<string> roles)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes(_JWTSettings.Secret);
@@ -41,7 +42,7 @@ namespace PorkRibsAPI.Factories
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(cliams),
-                Expires = DateTime.Now.AddSeconds(_JWTSettings.MinutesLife),
+                Expires = DateTime.Now.AddMinutes(_JWTSettings.MinutesLife),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
                                          SecurityAlgorithms.HmacSha256Signature),
             };
@@ -49,7 +50,7 @@ namespace PorkRibsAPI.Factories
             var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
             var refreshToken = _refreshToken.Create(token, user.UserName);
 
-            _refreshTokenRepository.Create(refreshToken);
+           await _refreshTokenRepository.Create(refreshToken);
 
             var tokenDTO = new TokenDTO()
             {
