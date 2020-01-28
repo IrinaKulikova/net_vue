@@ -19,15 +19,15 @@ namespace PorkRibsAPI.Factories
     public class JWTTokenFactory : IJWTTokenFactory
     {
         private readonly JWTSettings _JWTSettings;
-        private readonly IRefreshTokenFactory _refreshToken;
+        private readonly IRefreshTokenFactory _refreshTokenFactory;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
 
         public JWTTokenFactory(IOptions<JWTSettings> JWTSettings,
-                               IRefreshTokenFactory refreshToken,
+                               IRefreshTokenFactory refreshTokenFactory,
                                IRefreshTokenRepository refreshTokenRepository)
         {
             _JWTSettings = JWTSettings.Value;
-            _refreshToken = refreshToken;
+            _refreshTokenFactory = refreshTokenFactory;
             _refreshTokenRepository = refreshTokenRepository;
         }
         public async Task<TokenDTO> Create(ApplicationUser user, IEnumerable<string> roles)
@@ -48,7 +48,7 @@ namespace PorkRibsAPI.Factories
             };
 
             var token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor));
-            var refreshToken = _refreshToken.Create(token, user.UserName);
+            var refreshToken = _refreshTokenFactory.Create(token, user.UserName);
 
            await _refreshTokenRepository.Create(refreshToken);
 

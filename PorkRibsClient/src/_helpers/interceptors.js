@@ -8,7 +8,8 @@ export const httpClient = axios.create();
 
 httpClient.interceptors.request.use(
   config => {
-    const user = store.state.authentication.user;
+
+    const user = JSON.parse(localStorage.getItem('user'));
     if (user && user.accessToken) {
       config.headers['Authorization'] = 'Bearer ' + user.accessToken;
     }
@@ -42,10 +43,9 @@ httpClient.interceptors.response.use((response) => {
       }
     };
 
-    var refreshToken = store.state.authentication.user.refreshToken;
-    var userName = store.state.authentication.user.email;
+    const user = JSON.parse(localStorage.getItem('user'));
 
-    const data = JSON.stringify({ refreshToken, userName });
+    const data = JSON.stringify({ 'refreshToken':user.refreshToken, 'userName': user.email});
 
     httpClient.post(`${config.apiUrl}/authentication/refresh`, data, requestOptions)
       .then((responseRefresh) => {

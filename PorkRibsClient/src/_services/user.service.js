@@ -1,6 +1,5 @@
 import config from 'config';
 import { httpClient } from '../_helpers';
-import { store } from '../_store';
 
 export const userService = {
     login,
@@ -23,8 +22,7 @@ function login(username, password) {
         .then(response => {
             if (response.data.accessToken && response.data.refreshToken) {
                 localStorage.setItem('user', JSON.stringify(response.data));
-            }
-            return user;
+            }           
         })
         .catch((err) => {
             console.log("AXIOS ERROR: ", err);
@@ -41,23 +39,20 @@ function getAll() {
     return httpClient.get(`${config.apiUrl}/admin/users`)
         .then((response) => {
 
-            // var usersJSON = response.data;
-            // var a = JSON.parse(usersJSON);
-            // console.log("aaa");
-            // console.log(response.data);
-            // const data = JSON.parse(response.data);
+            if (response) {
+                if (response && response.status !== 200) {
+                    if (response.status === 401) {
+                        logout();
+                        location.reload(true);
+                    }
 
-            if (response.status !== 200) {
-                if (response.status === 401) {
-                    logout();
-                    location.reload(true);
+                    const error = (response.data && response.data.message) || response.statusText;
+                    return Promise.reject(error);
                 }
 
-                const error = (response.data && response.data.message) || response.statusText;
-                return Promise.reject(error);
+                return response.data;
             }
-
-            return data;
+            return null;
         })
         .catch((err) => {
             console.log("AXIOS ERROR: ", err);

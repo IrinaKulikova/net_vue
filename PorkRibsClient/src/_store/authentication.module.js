@@ -1,8 +1,6 @@
 import { userService } from '../_services';
 import { router } from '../_helpers';
 
-console.log('Hello');
-
 const user = JSON.parse(localStorage.getItem('user'));
 const initialState = user
     ? { status: { loggedIn: true }, user }
@@ -30,9 +28,6 @@ export const authentication = {
         logout({ commit }) {
             userService.logout();
             commit('logout');
-        },
-        refreshToken(){
-            
         }
     },
     mutations: {
