@@ -25,7 +25,7 @@ namespace PorkRibsRepositories
             else
             {
                 _dbSet.Add(item);
-               await _context.SaveChangesAsync();
+               _context.SaveChanges();
             }
         }
 

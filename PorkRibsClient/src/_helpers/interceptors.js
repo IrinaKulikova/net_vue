@@ -24,8 +24,13 @@ httpClient.interceptors.request.use(
 httpClient.interceptors.response.use((response) => {
   return response;
 }, (error) => {
+  
+  if (error.response.status === 400 && error.response.data === "Refresh token is revoked") {
+    localStorage.setItem('user','');
+    router.push("/login");
+  }
 
-  if (error.response.status !== 401) {
+ if (error.response.status !== 401) {
     return new Promise((resolve, reject) => {
       reject(error);
     });
@@ -45,25 +50,19 @@ httpClient.interceptors.response.use((response) => {
 
     const user = JSON.parse(localStorage.getItem('user'));
 
-    const data = JSON.stringify({ 'refreshToken':user.refreshToken, 'userName': user.email});
+    const data = JSON.stringify({ 'refreshToken': user.refreshToken, 'userName': user.email });
 
     httpClient.post(`${config.apiUrl}/authentication/refresh`, data, requestOptions)
       .then((responseRefresh) => {
-        if (responseRefresh.status == 400) {
-          return new Promise((resolve, reject) => {
-            store.clear();
-            router.push("/login");
-          });
-        }
 
         if (responseRefresh && responseRefresh.status === 201) {
           const data = JSON.stringify(responseRefresh.data);
 
           localStorage.setItem('user', data);
-          store.state.authentication.user = responseRefresh.data;
-          store.state.authentication.loggedIn = true;
 
           httpClient.defaults.headers.common['Authorization'] = 'Bearer ' + store.state.authentication.user.accessToken;
+          originalRequest.headers['Authorization']='Bearer ' + store.state.authentication.user.accessToken;
+          
           return httpClient(originalRequest);
         }
       })

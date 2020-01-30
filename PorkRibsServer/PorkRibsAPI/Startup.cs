@@ -32,7 +32,7 @@ namespace PorkRibsAPI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<PorkRibsDbContext>(options =>
-                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Scoped);
+                options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")), ServiceLifetime.Transient);
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<PorkRibsDbContext>();

@@ -69,6 +69,11 @@ namespace PorkRibsAPI.API
                 return BadRequest("Refresh token not found");
             }
 
+            if (refreshToken.Revoked)
+            {
+                return BadRequest("Refresh token is revoked");
+            }
+
             var user = await _userManager.FindByNameAsync(tokenDTO.UserName);
             var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
 

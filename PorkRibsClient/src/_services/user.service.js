@@ -1,10 +1,11 @@
 import config from 'config';
 import { httpClient } from '../_helpers';
 
+
 export const userService = {
-    login,
+    login,     
     logout,
-    getAll
+    getUsers
 };
 
 function login(username, password) {
@@ -34,7 +35,7 @@ function logout() {
     localStorage.removeItem('user');
 }
 
-function getAll() {
+function getUsers() {
 
     return httpClient.get(`${config.apiUrl}/admin/users`)
         .then((response) => {
@@ -49,7 +50,7 @@ function getAll() {
                     const error = (response.data && response.data.message) || response.statusText;
                     return Promise.reject(error);
                 }
-
+                
                 return response.data;
             }
             return null;
