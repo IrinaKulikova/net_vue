@@ -5,20 +5,21 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
-using PorkRibs.Models;
-using PorkRibs.DataBase;
-using PorkRibsAPI.DataBase.Init;
-using PorkRibsAPI.DataBase.Intit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
-using PorkRibsAPI.Factories;
+using PorkRibsData.DataBase;
+using PorkRibsData.Models;
+using PorkRibsData.DataBase.Intit.Interfaces;
+using PorkRibsRepositories;
 using PorkRibsAPI.Factories.Interface;
+using PorkRibsData.DataBase.Init;
+using PorkRibsAPI.Factories;
+using PorkRibsAPI.TokenFactories.Interface;
+using PorkRibsAPI.TokenFactories;
+using Microsoft.OpenApi.Models;
+using PorkRibsRepositories.Interfaces;
 using PorkRibsAPI.ConfigurationServices;
-using PorkRibsAPI.Models;
-using PorkRibsAPI.Repositories.GenericRepository.Interfaces;
-using PorkRibsAPI.Repositories;
 
-namespace PorkRibs
+namespace PorkRibsAPI
 {
     public class Startup
     {
@@ -49,22 +50,29 @@ namespace PorkRibs
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigin"));
             });
 
-            services.AddHttpsRedirection(options =>
+            services.AddSwaggerGen(c =>
             {
-                options.RedirectStatusCode = StatusCodes.Status307TemporaryRedirect;
-                options.HttpsPort = 4445;
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "PorkRibsAPI", Version = "v1" });
             });
 
             services.AddTransient<IInitializer, Initializer>();
             services.AddTransient<IJWTTokenFactory, JWTTokenFactory>();
             services.AddTransient<IRefreshTokenFactory, RefreshTokenFactory>();
-            services.AddTransient<IGenericRepository<RefreshToken>, RefreshTokenRepository>();
+            services.AddTransient<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseSwagger();
+
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "PorkRibsAPI V1");
+                c.RoutePrefix = string.Empty;
+            });
+
             app.UseStaticFiles();
             app.UseAuthentication();
             app.UseMvc();

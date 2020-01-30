@@ -1,55 +1,61 @@
 import config from 'config';
-import { authHeader } from '../_helpers';
+import { httpClient } from '../_helpers';
+
 
 export const userService = {
-    login,
+    login,     
     logout,
-    getAll
+    getUsers
 };
 
 function login(username, password) {
+
+    const data = JSON.stringify({ username, password });
+
     const requestOptions = {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        headers: {
+            'Content-Type': 'application/json;charset=UTF-8',
+            "Access-Control-Allow-Origin": "*"
+        }
     };
 
-    return fetch(`${config.apiUrl}/authentication`, requestOptions)
-        .then(handleResponse)
-        .then(user => {
-            if (user.accessToken && user.refreshToken) {
-                localStorage.setItem('user', JSON.stringify(user));
-            }
-            return user;
+    return httpClient.post(`${config.apiUrl}/authentication`, data, requestOptions)
+        .then(response => {
+            if (response.data.accessToken && response.data.refreshToken) {
+                localStorage.setItem('user', JSON.stringify(response.data));
+            }           
+        })
+        .catch((err) => {
+            console.log("AXIOS ERROR: ", err);
         });
 }
+
 
 function logout() {
     localStorage.removeItem('user');
 }
 
-function getAll() {
-    const requestOptions = {
-        method: 'GET',
-        headers: authHeader()
-    };
+function getUsers() {
 
-    return fetch(`${config.apiUrl}/admin/users`, requestOptions).then(handleResponse);
-}
+    return httpClient.get(`${config.apiUrl}/admin/users`)
+        .then((response) => {
 
-function handleResponse(response) {
-    return response.text().then(text => {
-        const data = text && JSON.parse(text);
-        if (!response.ok) {
-            if (response.status === 401) {
-                logout();
-                location.reload(true);
+            if (response) {
+                if (response && response.status !== 200) {
+                    if (response.status === 401) {
+                        logout();
+                        location.reload(true);
+                    }
+
+                    const error = (response.data && response.data.message) || response.statusText;
+                    return Promise.reject(error);
+                }
+                
+                return response.data;
             }
-
-            const error = (data && data.message) || response.statusText;
-            return Promise.reject(error);
-        }
-
-        return data;
-    });
+            return null;
+        })
+        .catch((err) => {
+            console.log("AXIOS ERROR: ", err);
+        });
 }

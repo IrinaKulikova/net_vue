@@ -13,7 +13,7 @@
             </div>
             <div class="form-group">
                 <label htmlFor="password">Password</label>
-                <input type="password" v-model="password" name="password" class="form-control" :class="{ 'is-invalid': submitted && !password }" />
+                <input type="password" v-model="password" name="password" class="form-control" :class="{ 'is-invalid': submitted && !password }"/>
                 <div v-show="submitted && !password" class="invalid-feedback">Password is required</div>
             </div>
             <div class="form-group">

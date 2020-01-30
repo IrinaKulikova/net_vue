@@ -2,8 +2,9 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
-using PorkRibs.DataBase;
-using PorkRibsAPI.Settings;
+using PorkRibsData.DataBase;
+using PorkRibsData.Settings;
+using System;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -51,7 +52,9 @@ namespace PorkRibsAPI.ConfigurationServices
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
                     ValidateIssuer = false,
-                    ValidateAudience = false
+                    ValidateAudience = false,
+                    ValidateLifetime = true,
+                    ClockSkew = TimeSpan.Zero
                 };
             });
         }

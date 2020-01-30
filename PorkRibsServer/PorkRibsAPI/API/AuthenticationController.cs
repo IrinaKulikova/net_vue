@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using PorkRibs.Models;
 using PorkRibsAPI.Factories.Interface;
 using PorkRibsAPI.ViewModels;
+using PorkRibsData.Models;
+using PorkRibsRepositories.Interfaces;
 using System.Threading.Tasks;
 
-namespace PorkRibs.API
+namespace PorkRibsAPI.API
 {
     [Route("api/v1/[controller]/")]
     [ApiController]
@@ -15,12 +16,14 @@ namespace PorkRibs.API
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IJWTTokenFactory _tokenFactory;
-
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
         public AuthenticationController(UserManager<ApplicationUser> userManager,
-                                        IJWTTokenFactory tokenFactory)
+                                        IJWTTokenFactory tokenFactory,
+                                        IRefreshTokenRepository refreshTokenRepository)
         {
             _userManager = userManager;
             _tokenFactory = tokenFactory;
+            _refreshTokenRepository = refreshTokenRepository;
         }
 
         [HttpPost]
@@ -48,7 +51,36 @@ namespace PorkRibs.API
 
             var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
 
-            var token = _tokenFactory.Create(user, roles);
+            var token = await _tokenFactory.Create(user, roles);
+
+            return Created("JWT", token);
+        }
+
+
+        [HttpPost]
+        [Route("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody]RefreshTokenDTO tokenDTO)
+        {
+            var refreshToken = _refreshTokenRepository
+                    .FindByGUID(tokenDTO.RefreshToken, tokenDTO.UserName);
+
+            if (refreshToken == null)
+            {
+                return BadRequest("Refresh token not found");
+            }
+
+            if (refreshToken.Revoked)
+            {
+                return BadRequest("Refresh token is revoked");
+            }
+
+            var user = await _userManager.FindByNameAsync(tokenDTO.UserName);
+            var roles = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+
+            var token = await _tokenFactory.Create(user, roles);
+
+            refreshToken.Revoked = true;
+            await _refreshTokenRepository.Update(refreshToken);
 
             return Created("JWT", token);
         }

@@ -1,2 +1,2 @@
 export * from './router';
-export * from './auth-header';
+export { httpClient } from './interceptors';

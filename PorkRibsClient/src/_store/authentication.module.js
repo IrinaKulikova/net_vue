@@ -1,7 +1,6 @@
 import { userService } from '../_services';
 import { router } from '../_helpers';
 
-
 const user = JSON.parse(localStorage.getItem('user'));
 const initialState = user
     ? { status: { loggedIn: true }, user }
